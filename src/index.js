@@ -9,25 +9,29 @@ const bip39 = { validateMnemonic, mnemonicToSeedSync, generateMnemonic, mnemonic
 
 const web3Commands = ['- hash', '- bip39', '- ipfs'];
 
-const _log = console.log;
 
 class Web3terminal extends Terminal {
 
-    componentDidMount () {
-        console.log = function () {
-            addToHistory(arguments);
-            return _log.apply(console, arguments);
-        }
+    componentDidMount ( props ) {
+
+        const _this = this;
+        const _log = console.log;
+
+        return (
+            console.log = function () {
+                _this.addToHistory(arguments);
+                return _log.apply(console, arguments);
+            }
+        );
+
     }
 
     addToHistory ( args ) {
-
-        return Object.assign({}, this.state, {
-            history: this.state.history.concat(
-                { value: args },
-            ),
-        });
-
+        this.setState({
+                history: this.state.history.concat(
+                    { value: args },
+                ),
+            })
     }  
 
 }
