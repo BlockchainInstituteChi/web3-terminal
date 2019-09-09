@@ -3,6 +3,9 @@ import ReactDOM from 'react-dom';
 import Terminal from 'react-bash';
 import sha256 from 'sha256';
 
+const web3Commands = ['hash'];
+
+
 const extensions = {
     sudo: {
         exec: ({ structure, history, cwd }) => {
@@ -28,14 +31,25 @@ const extensions = {
                 ),
             });
         },
-    }
+    },
+    docs : {
+    	exec: (state) => {
+	        return Object.assign({}, state, {
+	            history: state.history.concat(
+	                { value: 'Web3-Terminal:' },
+	                { value: 'These commands can be used for web3 functionality. Type \'docs\' to see this list.' },
+	                ...web3Commands.map(value => ({ value }))
+	            ),
+	        });
+	    },
+    },
 };
 
 const history = [
-    { value: 'Welcome to Web3 Terminal' },
+    { value: 'Welcome to our Web3 Terminal' },
     { value: 'Try out your commands here safely and become an expert in no time.' },
     { value: 'Powered by The Blockchain Institute - Visit https://weteachblockchain.org/ for more great tools!' },
-    { value: 'Type `help` to begin' },
+    { value: 'Type `help` for general tips or `docs` for web3 specific options.' },
 ];
 
 const structure = {
