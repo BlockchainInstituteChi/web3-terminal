@@ -2,8 +2,35 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Terminal from 'react-bash';
 import sha256 from 'sha256';
+import { validateMnemonic, mnemonicToSeedSync, generateMnemonic, mnemonicToEntropy } from 'bip39';
+import ipfs from 'ipfs';
 
-const web3Commands = ['hash'];
+const bip39 = { validateMnemonic, mnemonicToSeedSync, generateMnemonic, mnemonicToEntropy };
+
+const web3Commands = ['- hash', '- bip39', '- ipfs'];
+
+const _log = console.log;
+
+class Web3terminal extends Terminal {
+
+    componentDidMount () {
+        console.log = function () {
+            addToHistory(arguments);
+            return _log.apply(console, arguments);
+        }
+    }
+
+    addToHistory ( args ) {
+
+        return Object.assign({}, this.state, {
+            history: this.state.history.concat(
+                { value: args },
+            ),
+        });
+
+    }  
+
+}
 
 
 const extensions = {
@@ -13,6 +40,17 @@ const extensions = {
                 history: history.concat({ value: 'Nice try... (ಠ(ಠ(ಠ_ಠ)ಠ)ಠ)' }),
             };
         },
+    },
+    docs : {
+    	exec: (state) => {
+	        return Object.assign({}, state, {
+	            history: state.history.concat(
+	                { value: 'Web3-Terminal:' },
+	                { value: 'These commands can be used for web3 functionality. Type \'docs\' to see this list.' },
+	                ...web3Commands.map(value => ({ value }))
+	            ),
+	        });
+	    },
     },
     hash : {
         exec: (state, { flags, args }) => {
@@ -32,18 +70,92 @@ const extensions = {
             });
         },
     },
-    docs : {
-    	exec: (state) => {
-	        return Object.assign({}, state, {
-	            history: state.history.concat(
-	                { value: 'Web3-Terminal:' },
-	                { value: 'These commands can be used for web3 functionality. Type \'docs\' to see this list.' },
-	                ...web3Commands.map(value => ({ value }))
-	            ),
-	        });
-	    },
+    bip39 : {
+        exec: (state, { flags, args }) => {
+
+            var response = "";
+            console.log('args', args)
+            var mnemonic = concatArgsToString( args );
+            console.log('mnemonic', mnemonic)
+
+            if ( Object.keys(args).length > 0 ) {
+            	if ( args['generateMnemonic'] === 'true' ) {
+            		response = bip39.generateMnemonic();
+            	} else if ( args['mnemonicToEntropy'] ) {
+            		response = "Mnemonic Entropy: " + bip39.mnemonicToEntropy( mnemonic );
+            	} else if ( args['validateMnemonic'] ) {
+            		response = "Mnemonic Valid: " + bip39.validateMnemonic( mnemonic );
+            	}
+            } else {
+		        return Object.assign({}, state, {
+		            history: state.history.concat(
+		                { value: 'bip39:' },
+		                { value: 'This command can be used to generate HD wallets:' },
+		                { value: 'Pass `--generateMnemonic true` to create a new BIP39 mnemonic ' },
+		                { value: 'Pass `your mnemonic string of words separated by spaces --validateMnemonic true` to validate a mnemonic' },
+		                { value: 'Pass `your mnemonic string of words separated by spaces --mnemonicToEntropy true` to calculate the entropy of a known mnemonic' },
+		            ),
+		        });
+            }
+
+            console.log('response is ', response);
+
+            return Object.assign({}, state, {
+                history: state.history.concat(
+                    { value: response }
+                ),
+            });
+        },
     },
+    ipfs : {
+        exec: (state, { flags, args }) => {
+
+            if ( Object.keys(args).length > 0 ) {
+
+                return ipfs.create();
+
+            } else {
+                return Object.assign({}, state, {
+                    history: state.history.concat(
+                        { value: 'ipfs:' },
+                        { value: 'The Interplanetary File System allows users to share files peer-to-peer:' },
+                    ),
+                });
+            }
+
+        }
+    }
 };
+
+function concatArgsToString ( args ) {
+	var str = "";
+	var i = 0;
+
+	do {
+
+		str += args[i] + " ";
+		i++;
+
+	} while ( typeof(args[i]) != "undefined" );
+
+	return str;
+
+}
+
+function concatArgsToArray ( args ) {
+	var arr = [];
+	var i = 0;
+
+	do {
+
+		arr.push(args[i]);
+		i++;
+
+	} while ( typeof(args[i]) != "undefined" );
+
+	return arr;
+
+}
 
 const history = [
     { value: 'Welcome to our Web3 Terminal' },
@@ -69,5 +181,6 @@ const structure = {
     'README.md': { content: '✌⊂(✰‿✰)つ✌ Thanks for checking out the tool! There is a lot that you can do with react-bash and I\'m excited to see all of the fun commands and projects build on top of it!' },
 };
 
-const Root = <Terminal history={history} structure={structure} extensions={extensions} />;
+
+const Root = <Web3terminal history={history} structure={structure} extensions={extensions} />;
 ReactDOM.render(Root, document.getElementById('app'));
