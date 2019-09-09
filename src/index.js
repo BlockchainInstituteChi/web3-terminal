@@ -27,11 +27,13 @@ class Web3terminal extends Terminal {
     }
 
     addToHistory ( args ) {
+
         this.setState({
                 history: this.state.history.concat(
                     { value: args },
                 ),
             })
+
     }  
 
 }
@@ -116,13 +118,23 @@ const extensions = {
 
             if ( Object.keys(args).length > 0 ) {
 
-                return ipfs.create();
-
+                if ( args[0] === 'start' ) {
+                    ipfs.create();
+                    return Object.assign({}, state, {
+                        history: state.history.concat(
+                            { value: "IPFS Node starting..." }
+                        ),
+                    }); 
+                } else {
+                    
+                }
+                
             } else {
                 return Object.assign({}, state, {
                     history: state.history.concat(
                         { value: 'ipfs:' },
                         { value: 'The Interplanetary File System allows users to share files peer-to-peer:' },
+                        { value: 'Try `ipfs start` to run a node.' },
                     ),
                 });
             }
