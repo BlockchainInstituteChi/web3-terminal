@@ -5,6 +5,7 @@
   "dependencies": {
     "bip39": "^3.0.2",
     "ipfs": "^0.37.1",
+    "query-string": "^6.8.3",
     "react": "^16.9.0",
     "react-bash": "^1.6.0",
     "react-dom": "^16.9.0",

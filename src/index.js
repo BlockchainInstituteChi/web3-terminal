@@ -4,11 +4,13 @@ import Terminal from 'react-bash';
 import sha256 from 'sha256';
 import { validateMnemonic, mnemonicToSeedSync, generateMnemonic, mnemonicToEntropy } from 'bip39';
 import ipfs from 'ipfs';
+import qs from 'query-string';
 
 const bip39 = { validateMnemonic, mnemonicToSeedSync, generateMnemonic, mnemonicToEntropy };
 
 const web3Commands = ['- hash', '- bip39', '- ipfs'];
 
+var ipfs_node;
 
 class Web3terminal extends Terminal {
 
@@ -17,12 +19,23 @@ class Web3terminal extends Terminal {
         const _this = this;
         const _log = console.log;
 
+        setIframeFormat();
+
         return (
             console.log = function () {
                 _this.addToHistory(arguments);
                 return _log.apply(console, arguments);
             }
         );
+
+        function setIframeFormat () {
+            var iframe = qs.parse(window.location.search, { ignoreQueryPrefix: true }).iframe;
+            console.log('iframe', iframe)
+            if ( iframe === 'true' ) {
+                document.getElementById('app').className = "iframe";
+                document.getElementById('app').children[0].children[0].className = "hidden"; 
+            } 
+        }
 
     }
 
@@ -119,12 +132,30 @@ const extensions = {
             if ( Object.keys(args).length > 0 ) {
 
                 if ( args[0] === 'start' ) {
-                    ipfs.create();
+                   if ( typeof(ipfs_node) === "undefined" || ipfs_node === null ) {
+                        startIpfs(function(ipfs_node) {
+
+                       });
+                   } else {
+                     return Object.assign({}, state, {
+                                history: state.history.concat(
+                                    { value: "IPFS Node already running." }
+                                ),
+                            }); 
+                   }
+                   
+
+                } else if ( args[0] === 'stop' ) {
+
+                    ipfs_node.stop();
+                    ipfs_node = null;
+
                     return Object.assign({}, state, {
                         history: state.history.concat(
-                            { value: "IPFS Node starting..." }
+                            { value: "IPFS Node shutting down..." }
                         ),
                     }); 
+
                 } else {
                     
                 }
@@ -138,6 +169,19 @@ const extensions = {
                     ),
                 });
             }
+
+            async function startIpfs (cb) {
+                Object.assign({}, state, {
+                                history: state.history.concat(
+                                    { value: "IPFS Node starting..." }
+                                ),
+                            }); 
+                ipfs_node = await ipfs.create()
+
+                cb(ipfs_node)
+                
+            }
+
 
         }
     }
