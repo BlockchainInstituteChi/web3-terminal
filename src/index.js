@@ -5,12 +5,28 @@ import sha256 from 'sha256';
 import { validateMnemonic, mnemonicToSeedSync, generateMnemonic, mnemonicToEntropy } from 'bip39';
 import ipfs from 'ipfs';
 import qs from 'query-string';
+import FileDrop from 'react-file-drop';
 
 const bip39 = { validateMnemonic, mnemonicToSeedSync, generateMnemonic, mnemonicToEntropy };
 
 const web3Commands = ['- hash', '- bip39', '- ipfs'];
 
 var ipfs_node;
+
+class Web3TerminalDropper extends React.Component {
+    render () {
+        return (
+            <FileDrop onDrop={this.onDrop}>
+                <Web3terminal history={history} structure={structure} extensions={extensions} />
+            </FileDrop>
+        )
+    }
+
+    onDrop (files, event) {
+        // alert(files, event);
+        console.log('drop triggered', files[0].name)
+    }    
+}
 
 class Web3terminal extends Terminal {
 
@@ -241,6 +257,5 @@ const structure = {
     'README.md': { content: '✌⊂(✰‿✰)つ✌ Thanks for checking out the tool! There is a lot that you can do with react-bash and I\'m excited to see all of the fun commands and projects build on top of it!' },
 };
 
-
-const Root = <Web3terminal history={history} structure={structure} extensions={extensions} />;
+const Root = <Web3TerminalDropper />;
 ReactDOM.render(Root, document.getElementById('app'));
