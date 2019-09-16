@@ -19,7 +19,6 @@ class Web3TerminalDropper extends React.Component {
 
     constructor (props) {
         super(props);
-        console.log('history', history)
         this.state = {
             history: history,
             structure: structure,
@@ -31,14 +30,42 @@ class Web3TerminalDropper extends React.Component {
         return (
             <FileDrop onDrop={this.onDrop}>
                 <Web3terminal props={this.state} />
+                <button onClick={() => this.addOne() }>ClickToChange</button>
             </FileDrop>
         )
+    }
+
+    addOne (   ) {
+        this.setState({ 
+            'history' : this.state.history.concat(
+                    { value: 'AddOne Clicked!' },
+                ),
+            'extensions' : this.state.extensions,
+            'structure' : this.state.structure
+        });
+
     }
 
     onDrop (files, event) {
         // alert(files, event);
         console.log('drop triggered', files[0].name)
+
     }    
+
+    componentDidMount ( props ) {
+
+        function setIframeFormat () {
+            var iframe = qs.parse(window.location.search, { ignoreQueryPrefix: true }).iframe;
+            console.log('iframe', iframe)
+            if ( iframe === 'true' ) {
+                document.getElementById('app').className = "iframe";
+                document.getElementById('app').children[0].children[0].className = "hidden"; 
+            } 
+        }
+
+        setIframeFormat();
+
+    }
 }
 
 class Web3terminal extends React.Component {
@@ -55,12 +82,20 @@ class Web3terminal extends React.Component {
         )
     }
 
+    componentWillReceiveProps( props ) {
+        this.setState({ 
+            'history' : props.props.history.concat(
+                    { value: 'AddOne Clicked!' },
+                ),
+            'extensions' : props.props.extensions,
+            'structure' : props.props.structure
+        });
+    }
+
     componentDidMount ( props ) {
 
         const _this = this;
         const _log = console.log;
-
-        setIframeFormat();
 
         return (
             console.log = function () {
@@ -68,15 +103,6 @@ class Web3terminal extends React.Component {
                 return _log.apply(console, arguments);
             }
         );
-
-        function setIframeFormat () {
-            var iframe = qs.parse(window.location.search, { ignoreQueryPrefix: true }).iframe;
-            console.log('iframe', iframe)
-            if ( iframe === 'true' ) {
-                document.getElementById('app').className = "iframe";
-                document.getElementById('app').children[0].children[0].className = "hidden"; 
-            } 
-        }
 
     }
 
@@ -91,7 +117,6 @@ class Web3terminal extends React.Component {
     }  
 
 }
-
 
 const extensions = {
     sudo: {
