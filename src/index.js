@@ -24,13 +24,14 @@ class Web3TerminalDropper extends React.Component {
             structure: structure,
             extensions: extensions
         };
+        this.onDrop = this.onDrop.bind(this);
+        this.addToStructure = this.addToStructure.bind(this);
     }
 
     render () {
         return (
-            <FileDrop onDrop={this.onDrop}>
+            <FileDrop onDrop={this.onDrop} >
                 <Web3terminal props={this.state} />
-                <button onClick={() => this.addOne() }>ClickToChange</button>
             </FileDrop>
         )
     }
@@ -46,11 +47,35 @@ class Web3TerminalDropper extends React.Component {
 
     }
 
-    onDrop (files, event) {
-        // alert(files, event);
-        console.log('drop triggered', files[0].name)
+    onDrop ( files, event ) {
+
+        console.log('files ', files[0].name)
+
+        var newFile = {
+            "name" : "test",
+            "content" : "test_confirmed"
+        }
+        this.addToStructure(newFile)  
 
     }    
+
+    addToStructure (newFile) {
+        var struct = this.state.structure;
+        
+        console.log('drop triggered', struct, typeof(struct));
+
+        struct[ newFile.name ] = { 
+            "content" : newFile.content
+        };
+
+        console.log('struct', struct);
+
+        this.setState({ 
+            'history' : this.state.history,
+            'extensions' : this.state.extensions,
+            'structure' : struct
+        });      
+    }
 
     componentDidMount ( props ) {
 
