@@ -7,6 +7,8 @@ import ipfs from 'ipfs';
 import qs from 'query-string';
 import FileDrop from 'react-file-drop';
 
+// REMINDER: figure out how to handle the state changes of the web3terminal from the web3terminaldropper as a child class. think back to the tic tac toe game
+
 const bip39 = { validateMnemonic, mnemonicToSeedSync, generateMnemonic, mnemonicToEntropy };
 
 const web3Commands = ['- hash', '- bip39', '- ipfs'];
@@ -14,28 +16,117 @@ const web3Commands = ['- hash', '- bip39', '- ipfs'];
 var ipfs_node;
 
 class Web3TerminalDropper extends React.Component {
+
+    constructor (props) {
+        super(props);
+        this.state = {
+            history: history,
+            structure: structure,
+            extensions: extensions
+        };
+        this.onDrop = this.onDrop.bind(this);
+        this.addToStructure = this.addToStructure.bind(this);
+    }
+
     render () {
         return (
-            <FileDrop onDrop={this.onDrop}>
-                <Web3terminal history={history} structure={structure} extensions={extensions} />
+            <FileDrop onDrop={this.onDrop} >
+                <Web3terminal props={this.state} />
             </FileDrop>
         )
     }
 
-    onDrop (files, event) {
-        // alert(files, event);
-        console.log('drop triggered', files[0].name)
+    addOne (   ) {
+        this.setState({ 
+            'history' : this.state.history.concat(
+                    { value: 'Upload complete!' },
+                ),
+            'extensions' : this.state.extensions,
+            'structure' : this.state.structure
+        });
+
+    }
+
+    onDrop ( files, event ) {
+        var _this = this;
+
+        console.log()
+    
+        const reader = new FileReader()
+
+        reader.onabort = () => console.log('file reading was aborted')
+        reader.onerror = () => console.log('file reading has failed')
+        reader.onload = () => {
+            var output = reader.result;
+
+            var newFile = {
+                "name" : files[0].name,
+                "content" : output,
+            }
+            _this.addToStructure( newFile );
+
+        }
+
+        reader.readAsBinaryString(event.dataTransfer.files[0])
+
     }    
+
+    addToStructure (newFile) {
+        var state = this.state;
+        
+        state.structure[ newFile.name ] = { 
+            "content" : newFile.content
+        };
+
+        state.history.push({
+            "value" : "New file added: " + newFile.name
+        })
+
+        this.setState(state);      
+    }
+
+    componentDidMount ( props ) {
+
+        function setIframeFormat () {
+            var iframe = qs.parse(window.location.search, { ignoreQueryPrefix: true }).iframe;
+            // console.log('iframe', iframe)
+            if ( iframe === 'true' ) {
+                document.getElementById('app').className = "iframe";
+                document.getElementById('app').children[0].children[0].className = "hidden"; 
+            } 
+        }
+
+        setIframeFormat();
+
+    }
 }
 
-class Web3terminal extends Terminal {
+class Web3terminal extends React.Component {
+
+    constructor ( props ) {
+        super(props);
+        this.state = props.props;
+
+    }
+
+    render ( ) {
+        return (
+            <Terminal history={this.state.history} structure={this.state.structure} extensions={this.state.extensions} />
+        )
+    }
+
+    componentWillReceiveProps( props ) {
+        this.setState({ 
+            'history' : props.props.history,
+            'extensions' : props.props.extensions,
+            'structure' : props.props.structure
+        });
+    }
 
     componentDidMount ( props ) {
 
         const _this = this;
         const _log = console.log;
-
-        setIframeFormat();
 
         return (
             console.log = function () {
@@ -43,15 +134,6 @@ class Web3terminal extends Terminal {
                 return _log.apply(console, arguments);
             }
         );
-
-        function setIframeFormat () {
-            var iframe = qs.parse(window.location.search, { ignoreQueryPrefix: true }).iframe;
-            console.log('iframe', iframe)
-            if ( iframe === 'true' ) {
-                document.getElementById('app').className = "iframe";
-                document.getElementById('app').children[0].children[0].className = "hidden"; 
-            } 
-        }
 
     }
 
@@ -66,7 +148,6 @@ class Web3terminal extends Terminal {
     }  
 
 }
-
 
 const extensions = {
     sudo: {
@@ -238,6 +319,8 @@ const history = [
     { value: 'Try out your commands here safely and become an expert in no time.' },
     { value: 'Powered by The Blockchain Institute - Visit https://weteachblockchain.org/ for more great tools!' },
     { value: 'Type `help` for general tips or `docs` for web3 specific options.' },
+    { value: 'You can also click and drag files onto the terminal to add them to the root directory.' },
+    
 ];
 
 const structure = {
