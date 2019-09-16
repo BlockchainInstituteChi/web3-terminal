@@ -48,12 +48,26 @@ class Web3TerminalDropper extends React.Component {
     }
 
     onDrop ( files, event ) {
-        console.log('files', files, 'event', event)
-        var newFile = {
-            "name" : files[0].name,
-            "content" : files[0].name + "_content"
+        var _this = this;
+
+        console.log()
+    
+        const reader = new FileReader()
+
+        reader.onabort = () => console.log('file reading was aborted')
+        reader.onerror = () => console.log('file reading has failed')
+        reader.onload = () => {
+            var output = reader.result;
+
+            var newFile = {
+                "name" : files[0].name,
+                "content" : output,
+            }
+            _this.addToStructure( newFile );
+
         }
-        this.addToStructure(newFile)  
+
+        reader.readAsBinaryString(event.dataTransfer.files[0])
 
     }    
 
@@ -68,8 +82,6 @@ class Web3TerminalDropper extends React.Component {
             "value" : "New file added: " + newFile.name
         })
 
-        console.log('new state ', state)
-
         this.setState(state);      
     }
 
@@ -77,7 +89,7 @@ class Web3TerminalDropper extends React.Component {
 
         function setIframeFormat () {
             var iframe = qs.parse(window.location.search, { ignoreQueryPrefix: true }).iframe;
-            console.log('iframe', iframe)
+            // console.log('iframe', iframe)
             if ( iframe === 'true' ) {
                 document.getElementById('app').className = "iframe";
                 document.getElementById('app').children[0].children[0].className = "hidden"; 
@@ -307,6 +319,8 @@ const history = [
     { value: 'Try out your commands here safely and become an expert in no time.' },
     { value: 'Powered by The Blockchain Institute - Visit https://weteachblockchain.org/ for more great tools!' },
     { value: 'Type `help` for general tips or `docs` for web3 specific options.' },
+    { value: 'You can also click and drag files onto the terminal to add them to the root directory.' },
+    
 ];
 
 const structure = {
