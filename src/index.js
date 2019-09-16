@@ -39,7 +39,7 @@ class Web3TerminalDropper extends React.Component {
     addOne (   ) {
         this.setState({ 
             'history' : this.state.history.concat(
-                    { value: 'AddOne Clicked!' },
+                    { value: 'Upload complete!' },
                 ),
             'extensions' : this.state.extensions,
             'structure' : this.state.structure
@@ -48,33 +48,29 @@ class Web3TerminalDropper extends React.Component {
     }
 
     onDrop ( files, event ) {
-
-        console.log('files ', files[0].name)
-
+        console.log('files', files, 'event', event)
         var newFile = {
-            "name" : "test",
-            "content" : "test_confirmed"
+            "name" : files[0].name,
+            "content" : files[0].name + "_content"
         }
         this.addToStructure(newFile)  
 
     }    
 
     addToStructure (newFile) {
-        var struct = this.state.structure;
+        var state = this.state;
         
-        console.log('drop triggered', struct, typeof(struct));
-
-        struct[ newFile.name ] = { 
+        state.structure[ newFile.name ] = { 
             "content" : newFile.content
         };
 
-        console.log('struct', struct);
+        state.history.push({
+            "value" : "New file added: " + newFile.name
+        })
 
-        this.setState({ 
-            'history' : this.state.history,
-            'extensions' : this.state.extensions,
-            'structure' : struct
-        });      
+        console.log('new state ', state)
+
+        this.setState(state);      
     }
 
     componentDidMount ( props ) {
@@ -109,9 +105,7 @@ class Web3terminal extends React.Component {
 
     componentWillReceiveProps( props ) {
         this.setState({ 
-            'history' : props.props.history.concat(
-                    { value: 'AddOne Clicked!' },
-                ),
+            'history' : props.props.history,
             'extensions' : props.props.extensions,
             'structure' : props.props.structure
         });
