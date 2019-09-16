@@ -16,10 +16,21 @@ const web3Commands = ['- hash', '- bip39', '- ipfs'];
 var ipfs_node;
 
 class Web3TerminalDropper extends React.Component {
+
+    constructor (props) {
+        super(props);
+        console.log('history', history)
+        this.state = {
+            history: history,
+            structure: structure,
+            extensions: extensions
+        };
+    }
+
     render () {
         return (
             <FileDrop onDrop={this.onDrop}>
-                <Web3terminal history={history} structure={structure} extensions={extensions} />
+                <Web3terminal props={this.state} />
             </FileDrop>
         )
     }
@@ -30,7 +41,19 @@ class Web3TerminalDropper extends React.Component {
     }    
 }
 
-class Web3terminal extends Terminal {
+class Web3terminal extends React.Component {
+
+    constructor ( props ) {
+        super(props);
+        this.state = props.props;
+
+    }
+
+    render ( ) {
+        return (
+            <Terminal history={this.state.history} structure={this.state.structure} extensions={this.state.extensions} />
+        )
+    }
 
     componentDidMount ( props ) {
 
