@@ -7,6 +7,8 @@ import ipfs from 'ipfs';
 import qs from 'query-string';
 import FileDrop from 'react-file-drop';
 
+// REMINDER: figure out how to handle the state changes of the web3terminal from the web3terminaldropper as a child class. think back to the tic tac toe game
+
 const bip39 = { validateMnemonic, mnemonicToSeedSync, generateMnemonic, mnemonicToEntropy };
 
 const web3Commands = ['- hash', '- bip39', '- ipfs'];
